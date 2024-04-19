@@ -47,6 +47,7 @@ class ContentViewModel(app: Application): AndroidViewModel(app) {
                 val result = Gson().fromJson<List<Contents>>(resultJson.toString(), sType)
                 contentLD.value = result as ArrayList<Contents>?
                 countLD.value = count
+                Log.d("show_volley", count)
             },
             {
                 Log.e("show_voley", it.toString())

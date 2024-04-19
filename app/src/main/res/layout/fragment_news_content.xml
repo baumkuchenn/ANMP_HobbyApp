@@ -135,11 +135,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
-                        android:layout_marginEnd="8dp"
+                        android:layout_marginEnd="92dp"
                         android:layout_marginBottom="24dp"
                         android:text="◀"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/btnNextContent"
+                        app:layout_constraintTop_toBottomOf="@+id/txtIsiContent"
+                        app:layout_constraintVertical_bias="1.0" />
+
+                    <TextView
+                        android:id="@+id/txtPageContent"
+                        style="@style/TextAppearance.Material3.BodySmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TextView"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/btnNextContent"
+                        app:layout_constraintStart_toEndOf="@+id/btnPrevContent"
                         app:layout_constraintTop_toBottomOf="@+id/txtIsiContent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </ScrollView>

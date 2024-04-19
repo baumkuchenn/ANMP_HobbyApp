@@ -50,6 +50,9 @@ class NewsContentFragment : Fragment() {
                 contentVM.loadContent(idNews, index)
                 contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
                     binding.txtIsiContent.setText(content[0].isi)
+                    contentVM.countLD.observe(viewLifecycleOwner) { count ->
+                        binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
+                    }
                 })
             }
         }
@@ -62,6 +65,9 @@ class NewsContentFragment : Fragment() {
                 contentVM.loadContent(idNews, index)
                 contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
                     binding.txtIsiContent.setText(content[0].isi)
+                    contentVM.countLD.observe(viewLifecycleOwner) { count ->
+                        binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
+                    }
                 })
             }
         }
@@ -79,6 +85,9 @@ class NewsContentFragment : Fragment() {
         })
         contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
             binding.txtIsiContent.setText(content[0].isi)
+            contentVM.countLD.observe(viewLifecycleOwner) { count ->
+                binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
+            }
         })
         contentVM.contentLoadErrorLD.observe(viewLifecycleOwner, Observer {
             if(it == true) {
