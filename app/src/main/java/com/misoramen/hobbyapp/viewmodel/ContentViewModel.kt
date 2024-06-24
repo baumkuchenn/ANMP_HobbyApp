@@ -12,54 +12,31 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.misoramen.hobbyapp.model.Contents
 import com.misoramen.hobbyapp.model.News
+import com.misoramen.hobbyapp.util.buildDb
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import kotlin.coroutines.CoroutineContext
 
-class ContentViewModel(app: Application): AndroidViewModel(app) {
-    val contentLD = MutableLiveData<ArrayList<Contents>>()
+class ContentViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
+    val contentLD = MutableLiveData<List<Contents>>()
     val countLD = MutableLiveData<String>()
     val contentLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
+    private var job = Job()
 
-    val TAG = "volleyTag"
-    private var queue: RequestQueue? = null
-
-    fun loadContent(idNews: String, index: String){
+    fun loadContent(idNews: Int, index: Int){
         contentLoadErrorLD.value = false
         loadingLD.value = false
 
-        queue = Volley.newRequestQueue(getApplication())
-        val url = "https://anmp160721029.000webhostapp.com/get_news_content.php"
-
-        val params = HashMap<String, String>()
-        params["idNews"] = idNews
-        params["index"] = index
-
-        val stringRequest = object : StringRequest(
-            Request.Method.POST, url,
-            {
-                loadingLD.value = false
-                Log.d("show_volley", it)
-                val jsonObject = JSONObject(it)
-                val count = jsonObject.getString("count")
-                val resultJson = jsonObject.getJSONArray("data")
-
-                val sType = object : TypeToken<List<Contents>>(){}.type
-                val result = Gson().fromJson<List<Contents>>(resultJson.toString(), sType)
-                contentLD.value = result as ArrayList<Contents>?
-                countLD.value = count
-                Log.d("show_volley", count)
-            },
-            {
-                Log.e("show_voley", it.toString())
-                contentLoadErrorLD.value = false
-                loadingLD.value = false
-            }
-        ){
-            override fun getParams(): MutableMap<String, String>? {
-                return params
-            }
+        launch {
+            val db = buildDb(getApplication())
+            contentLD.postValue(db.hobbyDao().selectNewsContent(idNews, index))
         }
-        stringRequest.tag = TAG
-        queue?.add(stringRequest)
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.IO
 }

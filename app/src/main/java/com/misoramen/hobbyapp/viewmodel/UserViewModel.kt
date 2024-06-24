@@ -12,19 +12,27 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.misoramen.hobbyapp.model.HobbyDao
 import com.misoramen.hobbyapp.model.User
+import com.misoramen.hobbyapp.util.buildDb
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlin.coroutines.CoroutineContext
 
-class UserViewModel(val app: Application): AndroidViewModel(app) {
+class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope {
     val usersLD = MutableLiveData<User?>()
     var messageLD = MutableLiveData<String>()
     var resultLD = MutableLiveData<String>()
     val userLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
-
-    val TAG = "volleyTag"
-    private var queue: RequestQueue? = null
+    private var job = Job()
 
     fun saveUserId(idUser: Int?) {
         if (idUser != null) {
@@ -41,196 +49,72 @@ class UserViewModel(val app: Application): AndroidViewModel(app) {
     }
 
     fun login(username: String, password: String){
-        queue = Volley.newRequestQueue(getApplication())
-        val url = "https://anmp160721029.000webhostapp.com/login.php"
+        userLoadErrorLD.value = false
+        loadingLD.value = true
 
-        val params = HashMap<String, String>()
-        params["username"] = username
-        params["password"] = password
-
-        val stringRequest = object : StringRequest(
-            Request.Method.POST, url,
-            {response ->
-                Log.d("show_volley", response)
-                try {
-                    val jsonObject = JSONObject(response)
-                    val result = jsonObject.getString("result")
-                    val userJson = jsonObject.getJSONObject("data")
-
-                    if (result == "success") {
-                        // Extract user data using Gson
-                        val sType = object : TypeToken<User>() {}.type
-                        val user = Gson().fromJson<User>(userJson.toString(), sType)
-                        usersLD.value = user
-                        saveUserId(user.id)
-                        Log.d("show_volley", "Login successful!")
-                    } else {
-                        Log.w("show_volley", "Login failed: $result")
-                    }
-                } catch (e: JSONException) {
-                    Log.e("show_volley", "Error parsing JSON response: $e")
-                } finally {
-                    // Set usersLD.value to null if either success or exception occurs
-                    usersLD.value = null
-                }
-            },
-            {
-                Log.e("show_voley", it.toString())
-            }
-        ){
-            override fun getParams(): MutableMap<String, String>? {
-                return params
+        launch {
+            val db = buildDb(getApplication())
+            usersLD.value = db.hobbyDao().loginUser(username, password)
+            if (usersLD.value != null){
+                saveUserId(usersLD.value!!.id)
+                loadingLD.value = false
+                resultLD.value = "success"
+                messageLD.value = "Login berhasil"
+            } else {
+                loadingLD.value = false
+                resultLD.value = "ERROR"
+                messageLD.value = "Login gagal, username atau password salah"
             }
         }
-        stringRequest.tag = TAG
-        queue?.add(stringRequest)
     }
 
     fun createAccount(username: String, firstName: String, lastName: String, email: String, password: String){
-        queue = Volley.newRequestQueue(getApplication())
-        val url = "https://anmp160721029.000webhostapp.com/add_user.php"
+        loadingLD.value = true
+        launch {
+            val db = buildDb(getApplication())
+            usersLD.value = db.hobbyDao().getUsername(username)
+            if (usersLD.value == null){
+                val currentInstant = Instant.now()
+                val currentZone = ZoneId.systemDefault()
+                val localDateTime = currentInstant.atZone(currentZone).toLocalDateTime()
+                val formattedDateTime = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-        val params = HashMap<String, String>()
-        params["username"] = username
-        params["password"] = password
-        params["email"] = email
-        params["firstName"] = firstName
-        params["lastName"] = lastName
-
-        val stringRequest = object : StringRequest(
-            Request.Method.POST, url,
-            {response ->
-                Log.d("show_volley", response)
-                try {
-                    val jsonObject = JSONObject(response)
-                    val result = jsonObject.getString("result")
-                    val message = jsonObject.getString("message")
-
-                    if (result == "success") {
-                        // Extract user data using Gson
-                        val sType = object : TypeToken<User>() {}.type
-                        resultLD.value = result
-                        messageLD.value = message
-                        Log.d("show_volley", message)
-                    } else {
-                        resultLD.value = result
-                        messageLD.value = message
-                        Log.w("show_volley", "Login failed: $result")
-                    }
-                } catch (e: JSONException) {
-                    Log.e("show_volley", "Error parsing JSON response: $e")
-                }
-            },
-            {
-                Log.e("show_voley", it.toString())
-            }
-        ){
-            override fun getParams(): MutableMap<String, String>? {
-                return params
+                val newUser = User(username, password, email, firstName, lastName, formattedDateTime)
+                db.hobbyDao().registerUser(newUser)
+                loadingLD.value = false
+                resultLD.value = "success"
+                messageLD.value = "Pendaftaran berhasil"
+            } else {
+                loadingLD.value = false
+                resultLD.value = "ERROR"
+                messageLD.value = "Gagal daftar karena username sudah terpakai"
             }
         }
-        stringRequest.tag = TAG
-        queue?.add(stringRequest)
     }
 
     fun getAccount(){
         userLoadErrorLD.value = false
-        loadingLD.value = false
-
-        queue = Volley.newRequestQueue(getApplication())
-        val url = "https://anmp160721029.000webhostapp.com/get_user.php"
+        loadingLD.value = true
 
         val idUser = loadUserId()
-
-        if (idUser != null){
-            val params = HashMap<String, String>()
-            params["idUsers"] = idUser
-
-            val stringRequest = object : StringRequest(
-                Request.Method.POST, url,
-                {response ->
-                    Log.d("show_volley", response)
-                    try {
-                        val jsonObject = JSONObject(response)
-                        val result = jsonObject.getString("result")
-                        val userJson = jsonObject.getJSONObject("data")
-
-                        if (result == "success") {
-                            // Extract user data using Gson
-                            loadingLD.value = false
-                            val sType = object : TypeToken<User>() {}.type
-                            val user = Gson().fromJson<User>(userJson.toString(), sType)
-                            usersLD.value = user
-                            Log.d("show_volley", "Data fetch success" + user)
-                        } else {
-                            loadingLD.value = false
-                            userLoadErrorLD.value = false
-                            Log.w("show_volley", "Data fetch failed")
-                        }
-                    } catch (e: JSONException) {
-                        Log.e("show_volley", "Error parsing JSON response: $e")
-                    }
-                },
-                {
-                    Log.e("show_voley", it.toString())
-                }
-            ){
-                override fun getParams(): MutableMap<String, String>? {
-                    return params
-                }
-            }
-            stringRequest.tag = TAG
-            queue?.add(stringRequest)
+        launch {
+            val db = buildDb(getApplication())
+            usersLD.value = db.hobbyDao().getCertainUser(idUser!!)
+            loadingLD.value = false
         }
     }
 
     fun updateProfile(firstName: String, lastName: String, password: String){
-        queue = Volley.newRequestQueue(getApplication())
-        val url = "https://anmp160721029.000webhostapp.com/update_user.php"
-
         val idUser = loadUserId()
-
-        if (idUser != null){
-            val params = HashMap<String, String>()
-            params["idUsers"] = idUser
-            params["newPass"] = password
-            params["firstName"] = firstName
-            params["lastName"] = lastName
-
-            val stringRequest = object : StringRequest(
-                Request.Method.POST, url,
-                {response ->
-                    Log.d("show_volley", response)
-                    try {
-                        val jsonObject = JSONObject(response)
-                        val result = jsonObject.getString("result")
-                        val message = jsonObject.getString("message")
-
-                        if (result == "success") {
-                            // Extract user data using Gson
-                            val sType = object : TypeToken<User>() {}.type
-                            resultLD.value = result
-                            messageLD.value = message
-                            Log.d("show_volley", "Update profile success")
-                        } else {
-                            resultLD.value = result
-                            messageLD.value = message
-                            Log.w("show_volley", "Update data failed")
-                        }
-                    } catch (e: JSONException) {
-                        Log.e("show_volley", "Error parsing JSON response: $e")
-                    }
-                },
-                {
-                    Log.e("show_voley", it.toString())
-                }
-            ){
-                override fun getParams(): MutableMap<String, String>? {
-                    return params
-                }
-            }
-            stringRequest.tag = TAG
-            queue?.add(stringRequest)
+        launch {
+            val db = buildDb(getApplication())
+            db.hobbyDao().update(firstName, lastName, password, idUser!!)
+            loadingLD.value = false
+            resultLD.value = "success"
+            messageLD.value = "Profile berhasil diubah"
         }
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.IO
 }
