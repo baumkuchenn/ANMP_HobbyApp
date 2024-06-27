@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 class NewsViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
-    val newsLD = MutableLiveData<List<NewsWithAuthor>>()
+    val newsLD = MutableLiveData<ArrayList<NewsWithAuthor>>()
     val newsLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
     private var job = Job()
@@ -31,7 +31,8 @@ class NewsViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
 
         launch {
             val db = buildDb(getApplication())
-            newsLD.postValue(db.hobbyDao().selectAllNews())
+            val result = db.hobbyDao().selectAllNews()
+            newsLD.value = result as ArrayList<NewsWithAuthor>
         }
     }
 
@@ -41,7 +42,8 @@ class NewsViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
 
         launch {
             val db = buildDb(getApplication())
-            newsLD.postValue(db.hobbyDao().selectCertainNews(idNews))
+            val result = db.hobbyDao().selectCertainNews(idNews)
+            newsLD.value = result as ArrayList<NewsWithAuthor>
         }
     }
 

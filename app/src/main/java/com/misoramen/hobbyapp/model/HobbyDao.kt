@@ -23,10 +23,10 @@ interface HobbyDao {
     @Query("UPDATE user SET first_name= :firstName, last_name= :lastName, password= :password WHERE id= :idUser")
     fun update(firstName: String, lastName: String, password: String, idUser: String)
 
-    @Query("SELECT n.*, g.nama, u.first_name FROM news n INNER JOIN user u on n.user_id = u.id INNER JOIN genre g on n.genre_id = g.id")
+    @Query("SELECT n.*, u.first_name as author, g.nama as genre FROM news n INNER JOIN user u on n.user_id = u.id INNER JOIN genre g on n.genre_id = g.id")
     fun selectAllNews(): List<NewsWithAuthor>
 
-    @Query("SELECT n.*, g.nama, u.first_name FROM news n INNER JOIN user u on n.user_id = u.id INNER JOIN genre g on n.genre_id = g.id WHERE n.id = :idNews")
+    @Query("SELECT n.*, u.first_name as author, g.nama as genre FROM news n INNER JOIN user u on n.user_id = u.id INNER JOIN genre g on n.genre_id = g.id WHERE n.id = :idNews")
     fun selectCertainNews(idNews: Int): List<NewsWithAuthor>
 
     @Query("SELECT * FROM Contents WHERE news_id = :idNews LIMIT :index, 1")

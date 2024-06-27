@@ -7,10 +7,11 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import com.misoramen.hobbyapp.databinding.NewsListItemBinding
 import com.misoramen.hobbyapp.model.News
+import com.misoramen.hobbyapp.model.NewsWithAuthor
 import com.misoramen.hobbyapp.viewmodel.NewsViewModel
 import com.squareup.picasso.Picasso
 
-class NewsListAdapter(val newsList:ArrayList<News>)
+class NewsListAdapter(val newsList:ArrayList<NewsWithAuthor>)
     : RecyclerView.Adapter<NewsListAdapter.NewsViewHolder>()
 {
     class NewsViewHolder(var binding: NewsListItemBinding)
@@ -44,7 +45,7 @@ class NewsListAdapter(val newsList:ArrayList<News>)
             }
         }
     }
-    fun updateNewsList(newNewsList: ArrayList<News>) {
+    fun updateNewsList(newNewsList: ArrayList<NewsWithAuthor>) {
         newsList.clear()
         newsList.addAll(newNewsList)
         notifyDataSetChanged()
