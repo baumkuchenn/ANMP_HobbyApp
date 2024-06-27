@@ -48,49 +48,53 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
         return sharedPref.getString("ID", null)
     }
 
-    fun login(username: String, password: String){
+    fun login(user: User) {
         userLoadErrorLD.value = false
         loadingLD.value = true
 
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().loginUser(username, password)
-            if (usersLD.value != null){
-                saveUserId(usersLD.value!!.id)
-                loadingLD.value = false
-                resultLD.value = "success"
-                messageLD.value = "Login berhasil"
+            val loggedInUser = db.hobbyDao().loginUser(user.username, user.password)
+            if (loggedInUser != null) {
+                saveUserId(loggedInUser.id)
+                loadingLD.postValue(false)
+                resultLD.postValue("success")
+                messageLD.postValue("Login berhasil")
+                usersLD.postValue(loggedInUser) // Update LiveData on the main thread
             } else {
-                loadingLD.value = false
-                resultLD.value = "ERROR"
-                messageLD.value = "Login gagal, username atau password salah"
+                loadingLD.postValue(false)
+                resultLD.postValue("ERROR")
+                messageLD.postValue("Login gagal, username atau password salah")
+                usersLD.postValue(null) // Update LiveData on the main thread
             }
         }
     }
 
-    fun createAccount(username: String, firstName: String, lastName: String, email: String, password: String){
+
+    fun createAccount(user: User){
         loadingLD.value = true
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().getUsername(username)
+            usersLD.postValue(db.hobbyDao().getUsername(user.username))
             if (usersLD.value == null){
                 val currentInstant = Instant.now()
                 val currentZone = ZoneId.systemDefault()
                 val localDateTime = currentInstant.atZone(currentZone).toLocalDateTime()
                 val formattedDateTime = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-                val newUser = User(username, password, email, firstName, lastName, formattedDateTime)
+                val newUser = User(user.username, user.password, user.email, user.firstName, user.lastName, formattedDateTime)
                 db.hobbyDao().registerUser(newUser)
-                loadingLD.value = false
-                resultLD.value = "success"
-                messageLD.value = "Pendaftaran berhasil"
+                loadingLD.postValue(false)
+                resultLD.postValue("success")
+                messageLD.postValue("Pendaftaran berhasil")
             } else {
-                loadingLD.value = false
-                resultLD.value = "ERROR"
-                messageLD.value = "Gagal daftar karena username sudah terpakai"
+                loadingLD.postValue(false)
+                resultLD.postValue("ERROR")
+                messageLD.postValue("Gagal daftar karena username sudah terpakai")
             }
         }
     }
+
 
     fun getAccount(){
         userLoadErrorLD.value = false
@@ -104,11 +108,11 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
         }
     }
 
-    fun updateProfile(firstName: String, lastName: String, password: String){
+    fun updateProfile(user: User){
         val idUser = loadUserId()
         launch {
             val db = buildDb(getApplication())
-            db.hobbyDao().update(firstName, lastName, password, idUser!!)
+            db.hobbyDao().update(user.firstName, user.lastName, user.password, idUser!!)
             loadingLD.value = false
             resultLD.value = "success"
             messageLD.value = "Profile berhasil diubah"

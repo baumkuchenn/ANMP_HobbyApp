@@ -19,34 +19,51 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
-class NewsViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
+class NewsViewModel(app: Application) : AndroidViewModel(app), CoroutineScope {
     val newsLD = MutableLiveData<ArrayList<NewsWithAuthor>>()
     val newsLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
     private var job = Job()
 
-    fun loadNews(){
+    fun loadNews() {
         newsLoadErrorLD.value = false
-        loadingLD.value = false
+        loadingLD.value = true // Set loading state to true
 
         launch {
-            val db = buildDb(getApplication())
-            val result = db.hobbyDao().selectAllNews()
-            newsLD.value = result as ArrayList<NewsWithAuthor>
+            try {
+                val db = buildDb(getApplication())
+                val result = db.hobbyDao().selectAllNews()
+                newsLD.postValue(result as ArrayList<NewsWithAuthor>) // Update LiveData on the main thread
+                loadingLD.postValue(false) // Set loading state to false after data is loaded
+            } catch (e: Exception) {
+                newsLoadErrorLD.postValue(true) // Set error state on the main thread
+                loadingLD.postValue(false) // Set loading state to false on error
+            }
         }
     }
 
-    fun getCertainNews(idNews: Int){
+    fun getCertainNews(idNews: Int) {
         newsLoadErrorLD.value = false
-        loadingLD.value = false
+        loadingLD.value = true // Set loading state to true
 
         launch {
-            val db = buildDb(getApplication())
-            val result = db.hobbyDao().selectCertainNews(idNews)
-            newsLD.value = result as ArrayList<NewsWithAuthor>
+            try {
+                val db = buildDb(getApplication())
+                val result = db.hobbyDao().selectCertainNews(idNews)
+                newsLD.postValue(result as ArrayList<NewsWithAuthor>) // Update LiveData on the main thread
+                loadingLD.postValue(false) // Set loading state to false after data is loaded
+            } catch (e: Exception) {
+                newsLoadErrorLD.postValue(true) // Set error state on the main thread
+                loadingLD.postValue(false) // Set loading state to false on error
+            }
         }
     }
 
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
+
+    override fun onCleared() {
+        super.onCleared()
+        job.cancel() // Cancel coroutine job when ViewModel is cleared
+    }
 }

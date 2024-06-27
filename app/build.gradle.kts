@@ -9,6 +9,11 @@ android {
     namespace = "com.misoramen.hobbyapp"
     compileSdk = 34
 
+    buildFeatures{
+        viewBinding = true
+        dataBinding = true
+    }
+
     defaultConfig {
         applicationId = "com.misoramen.hobbyapp"
         minSdk = 26

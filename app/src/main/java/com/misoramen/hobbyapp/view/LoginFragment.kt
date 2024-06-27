@@ -9,10 +9,12 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.misoramen.hobbyapp.R
 import com.misoramen.hobbyapp.databinding.FragmentLoginBinding
+import com.misoramen.hobbyapp.model.User
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 
-class LoginFragment : Fragment() {
+class LoginFragment : Fragment(), ButtonClickListener {
     private lateinit var viewModel: UserViewModel
     private lateinit var binding: FragmentLoginBinding
 
@@ -21,31 +23,44 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.btnCreateLogin.setOnClickListener {
-            val action = LoginFragmentDirections.actionRegisterFragment()
-            Navigation.findNavController(it).navigate(action)
-        }
-        binding.btnSignInLogin.setOnClickListener{
-            //Tambah Autentifikasi pakai Gson ke database
-            var username = binding.txtUsernameLogin.text.toString()
-            var password = binding.txtPasswordLogin.text.toString()
+        viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        binding.user = User("", "", "", "", "", "") // Initialize user with empty fields
+        binding.loginlistener = this
+        binding.regislistener = this
+    }
 
-            viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-            viewModel.login(username, password)
-            viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
-                if (user != null){
-                    val action = LoginFragmentDirections.actionHomeFragment()
-                    Navigation.findNavController(it).navigate(action)
+    override fun onButtonClick(v: View) {
+        when (v.id) {
+            R.id.btnSignInLogin -> {
+                val user = binding.user
+                if (user != null) {
+                    viewModel.login(user)
+                    viewModel.usersLD.observe(viewLifecycleOwner, Observer { loggedInUser ->
+                        if (loggedInUser != null) {
+                            // Navigate to home fragment upon successful login
+                            val action = LoginFragmentDirections.actionHomeFragment()
+                            Navigation.findNavController(v).navigate(action)
+                        } else {
+                            // Show login failed message
+                            Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+                        }
+                    })
+                } else {
+                    // Handle case when user is null (if needed)
+                    Toast.makeText(context, "Username or password is empty", Toast.LENGTH_SHORT).show()
                 }
-                else{
-                    Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
-                }
-            })
+            }
+            R.id.btnCreateLogin -> {
+                // Navigate to register fragment
+                val action = LoginFragmentDirections.actionRegisterFragment()
+                Navigation.findNavController(v).navigate(action)
+            }
         }
     }
 }

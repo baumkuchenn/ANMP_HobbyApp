@@ -9,10 +9,12 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import com.misoramen.hobbyapp.R
 import com.misoramen.hobbyapp.databinding.FragmentRegisterBinding
+import com.misoramen.hobbyapp.model.User
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 
-class RegisterFragment : Fragment() {
+class RegisterFragment : Fragment(), ButtonClickListener {
     private lateinit var binding: FragmentRegisterBinding
     private lateinit var viewModel: UserViewModel
 
@@ -26,36 +28,51 @@ class RegisterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.btnCreateRegister.setOnClickListener {
-            //Cek username di database, cek password dan confirm pass, simpan akun ke db
-            var username = binding.txtUsernameRegister.text.toString()
-            var email = binding.txtEmailRegister.text.toString()
-            var firstName = binding.txtFirstNameRegister.text.toString()
-            var lastName = binding.txtLastNameRegister.text.toString()
-            var password = binding.txtPasswordRegister.text.toString()
-            var confirmPass = binding.txtConfirmPassRegister.text.toString()
+        viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
 
-            if (password == confirmPass){
-                viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-                viewModel.createAccount(username, firstName, lastName, email, password)
-                viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
-                    if (viewModel.resultLD.value == "success"){
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        val action = RegisterFragmentDirections.actionLoginFragment()
-                        Navigation.findNavController(it).navigate(action)
+        // Initialize binding.user with a User object
+        binding.user = User("", "", "", "", "", "")
+
+        binding.regislistener = this
+        binding.loginlistener = this
+    }
+
+    override fun onButtonClick(v: View) {
+        when (v.id) {
+            R.id.btnCreateRegister -> {
+                val password = binding.txtPasswordRegister.text.toString()
+                val confirmPass = binding.txtConfirmPassRegister.text.toString()
+
+                if (password.isEmpty() || confirmPass.isEmpty()) {
+                    Toast.makeText(context, "Password cannot be empty", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                if (password == confirmPass) {
+
+                    if (binding.user != null) {
+                        viewModel.createAccount(binding.user!!)
+                        viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
+                            if (viewModel.resultLD.value == "success") {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                val action = RegisterFragmentDirections.actionLoginFragment()
+                                Navigation.findNavController(v).navigate(action)
+                            } else {
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                    } else {
+                        Toast.makeText(context, "User data is null", Toast.LENGTH_SHORT).show()
                     }
-                    else{
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                })
+                } else {
+                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                }
             }
-            else{
-                Toast.makeText(context, "Password is not same", Toast.LENGTH_SHORT).show()
+            R.id.btnSignInRegister -> {
+                val action = RegisterFragmentDirections.actionLoginFragment()
+                Navigation.findNavController(v).navigate(action)
             }
-        }
-        binding.btnSignInRegister.setOnClickListener {
-            val action = RegisterFragmentDirections.actionLoginFragment()
-            Navigation.findNavController(it).navigate(action)
         }
     }
+
 }
