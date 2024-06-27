@@ -68,9 +68,12 @@ data class Genre(
 }
 
 data class NewsWithAuthor(
+    var id: Int,
     var judul: String,
     var description: String,
+    @ColumnInfo("image_url")
     var imageUrl: String,
+    @ColumnInfo("created_at")
     var createdAt: String,
     var author: String,
     var genre: String

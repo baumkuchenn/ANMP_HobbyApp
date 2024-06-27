@@ -33,20 +33,20 @@ class NewsContentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString()
+        val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
         newsVM = ViewModelProvider(this).get(NewsViewModel::class.java)
         contentVM = ViewModelProvider(this).get(ContentViewModel::class.java)
 
         newsVM.getCertainNews(idNews)
-        contentVM.loadContent(idNews, currentContentIndex.toString())
+        contentVM.loadContent(idNews, currentContentIndex.toString().toInt())
 
         observeViewModel()
 
         binding.btnNextContent.setOnClickListener {
             if (currentContentIndex < contentVM.countLD.value!!.toInt() - 1) {
                 currentContentIndex++
-                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString()
-                val index = currentContentIndex.toString()
+                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
+                val index = currentContentIndex.toString().toInt()
                 contentVM.loadContent(idNews, index)
                 contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
                     binding.txtIsiContent.setText(content[0].isi)
@@ -60,8 +60,8 @@ class NewsContentFragment : Fragment() {
         binding.btnPrevContent.setOnClickListener {
             if (currentContentIndex > 0) {
                 currentContentIndex--
-                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString()
-                val index = currentContentIndex.toString()
+                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
+                val index = currentContentIndex.toString().toInt()
                 contentVM.loadContent(idNews, index)
                 contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
                     binding.txtIsiContent.setText(content[0].isi)
