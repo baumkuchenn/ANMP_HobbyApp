@@ -13,7 +13,7 @@ import com.misoramen.hobbyapp.R
 import com.misoramen.hobbyapp.databinding.FragmentProfileBinding
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 
-class ProfileFragment : Fragment() {
+class ProfileFragment : Fragment(), ButtonClickListener {
     private lateinit var binding: FragmentProfileBinding
     private lateinit var viewModel: UserViewModel
 
@@ -29,6 +29,9 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        binding.signoutlistener = this
+        binding.changelistener = this
+
         viewModel.getAccount()
 
         observeViewModel()
@@ -39,51 +42,21 @@ class ProfileFragment : Fragment() {
             viewModel.getAccount()
             binding.refreshLayoutProfile.isRefreshing = false
         }
-
-        binding.btnChangeProfile.setOnClickListener {
-            val firstName = binding.txtFirstNameProfile.text.toString()
-            val lastName = binding.txtLastNameProfile.text.toString()
-            val newPass = binding.txtPasswordProfile.text.toString()
-            val newConfirmPass = binding.txtConfirmPassProfile.text.toString()
-
-            if (newPass == newConfirmPass){
-                viewModel.updateProfile(firstName, lastName, newPass)
-                viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
-                    if (viewModel.resultLD.value == "success"){
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                })
-            }
-            else{
-                Toast.makeText(context, "Password is not same", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        binding.btnSignOutProfile.setOnClickListener {
-            val action = ProfileFragmentDirections.actionItemProfileToLoginFragment()
-            Navigation.findNavController(it).navigate(action)
-        }
     }
 
-    fun observeViewModel() {
+    private fun observeViewModel() {
         viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
-            if (user != null){
-                binding.txtFirstNameProfile.setText(user.firstName)
-                binding.txtLastNameProfile.setText(user.lastName)
+            user?.let {
+                binding.user = it
             }
         })
+
         viewModel.userLoadErrorLD.observe(viewLifecycleOwner, Observer {
-            if(it == true) {
-                binding.txtErrorProfile?.visibility = View.VISIBLE
-            } else {
-                binding.txtErrorProfile?.visibility = View.GONE
-            }
+            binding.txtErrorProfile.visibility = if (it) View.VISIBLE else View.GONE
         })
+
         viewModel.loadingLD.observe(viewLifecycleOwner, Observer {
-            if(it == true) {
+            if (it) {
                 binding.constraintLayoutProfile.visibility = View.GONE
                 binding.progressLoadProfile.visibility = View.VISIBLE
             } else {
@@ -92,4 +65,37 @@ class ProfileFragment : Fragment() {
             }
         })
     }
+
+    override fun onButtonClick(v: View) {
+        when (v.id) {
+            R.id.btnChangeProfile -> {
+                val newPass = binding.txtPasswordProfile.text.toString()
+                val newConfirmPass = binding.txtConfirmPassProfile.text.toString()
+
+               if (newPass.isNotEmpty() && newConfirmPass.isNotEmpty()){
+                   if (newPass == newConfirmPass) {
+                       // Set updated values to the user object
+                       val updatedUser = binding.user!!.copy(
+                           firstName = binding.txtFirstNameProfile.text.toString(),
+                           lastName = binding.txtLastNameProfile.text.toString(),
+                           password = newPass
+                       )
+                       viewModel.updateProfile(updatedUser)
+                       viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
+                           Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                       })
+                   } else {
+                       Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                   }
+               }else{
+                   Toast.makeText(context, "Passwords is empty", Toast.LENGTH_SHORT).show()
+               }
+            }
+            R.id.btnSignOutProfile -> {
+                val action = ProfileFragmentDirections.actionItemProfileToLoginFragment()
+                Navigation.findNavController(v).navigate(action)
+            }
+        }
+    }
+
 }
