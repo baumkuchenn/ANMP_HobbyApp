@@ -2,25 +2,14 @@ package com.misoramen.hobbyapp.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.misoramen.hobbyapp.model.HobbyDao
 import com.misoramen.hobbyapp.model.User
 import com.misoramen.hobbyapp.util.buildDb
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.json.JSONException
-import org.json.JSONObject
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -28,8 +17,8 @@ import kotlin.coroutines.CoroutineContext
 
 class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope {
     val usersLD = MutableLiveData<User?>()
-    var messageLD = MutableLiveData<String>()
-    var resultLD = MutableLiveData<String>()
+    val messageLD = MutableLiveData<String>()
+    val resultLD = MutableLiveData<String>()
     val userLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
     private var job = Job()
@@ -70,17 +59,16 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
         }
     }
 
-
-    fun createAccount(user: User){
+    fun createAccount(user: User) {
         loadingLD.value = true
         launch {
             val db = buildDb(getApplication())
             usersLD.postValue(db.hobbyDao().getUsername(user.username))
-            if (usersLD.value == null){
+            if (usersLD.value == null) {
                 val currentInstant = Instant.now()
                 val currentZone = ZoneId.systemDefault()
                 val localDateTime = currentInstant.atZone(currentZone).toLocalDateTime()
-                val formattedDateTime = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                val formattedDateTime = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
                 val newUser = User(user.username, user.password, user.email, user.firstName, user.lastName, formattedDateTime)
                 db.hobbyDao().registerUser(newUser)
@@ -95,27 +83,27 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
         }
     }
 
-
-    fun getAccount(){
+    fun getAccount() {
         userLoadErrorLD.value = false
         loadingLD.value = true
 
         val idUser = loadUserId()
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().getCertainUser(idUser!!)
-            loadingLD.value = false
+            usersLD.postValue(db.hobbyDao().getCertainUser(idUser!!))
+            loadingLD.postValue(false)
         }
     }
 
-    fun updateProfile(user: User){
+    fun updateProfile(user: User) {
         val idUser = loadUserId()
         launch {
             val db = buildDb(getApplication())
-            db.hobbyDao().update(user.firstName, user.lastName, user.password, idUser!!)
-            loadingLD.value = false
-            resultLD.value = "success"
-            messageLD.value = "Profile berhasil diubah"
+            db.hobbyDao().update(user.firstName, user.lastName, user.password, idUser.toString())
+            loadingLD.postValue(false)
+            resultLD.postValue("success")
+            messageLD.postValue("Profile berhasil diubah")
+            usersLD.postValue(user) // Update the LiveData with the updated user
         }
     }
 

@@ -113,7 +113,8 @@
                         android:id="@+id/txtLastNameProfile"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@={user.lastName}"/>
+                        android:text="@{user.lastName}"
+                        />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -137,7 +138,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:password="true"
-                        android:text="@={user.password}"/>
+                         />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -180,7 +181,7 @@
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="15dp"
                     android:onClick="@{signoutlistener::onButtonClick}"
                     android:text="SIGN OUT"
                     app:layout_constraintEnd_toEndOf="parent"

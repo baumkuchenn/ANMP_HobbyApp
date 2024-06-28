@@ -72,14 +72,24 @@ class ProfileFragment : Fragment(), ButtonClickListener {
                 val newPass = binding.txtPasswordProfile.text.toString()
                 val newConfirmPass = binding.txtConfirmPassProfile.text.toString()
 
-                if (newPass == newConfirmPass) {
-                    viewModel.updateProfile(binding.user!!)
-                    viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    })
-                } else {
-                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                }
+               if (newPass.isNotEmpty() && newConfirmPass.isNotEmpty()){
+                   if (newPass == newConfirmPass) {
+                       // Set updated values to the user object
+                       val updatedUser = binding.user!!.copy(
+                           firstName = binding.txtFirstNameProfile.text.toString(),
+                           lastName = binding.txtLastNameProfile.text.toString(),
+                           password = newPass
+                       )
+                       viewModel.updateProfile(updatedUser)
+                       viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
+                           Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                       })
+                   } else {
+                       Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                   }
+               }else{
+                   Toast.makeText(context, "Passwords is empty", Toast.LENGTH_SHORT).show()
+               }
             }
             R.id.btnSignOutProfile -> {
                 val action = ProfileFragmentDirections.actionItemProfileToLoginFragment()
@@ -87,4 +97,5 @@ class ProfileFragment : Fragment(), ButtonClickListener {
             }
         }
     }
+
 }
