@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 class NewsViewModel(app: Application) : AndroidViewModel(app), CoroutineScope {
-    val newsLD = MutableLiveData<ArrayList<NewsWithAuthor>>()
+    val newsLD = MutableLiveData<ArrayList<NewsWithAuthor>>() // Use ArrayList<NewsWithAuthor> for LiveData
     val newsLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
     private var job = Job()
@@ -34,7 +34,7 @@ class NewsViewModel(app: Application) : AndroidViewModel(app), CoroutineScope {
             try {
                 val db = buildDb(getApplication())
                 val result = db.hobbyDao().selectAllNews()
-                newsLD.postValue(result as ArrayList<NewsWithAuthor>) // Update LiveData on the main thread
+                newsLD.postValue(ArrayList(result)) // Ensure result is converted to ArrayList if needed
                 loadingLD.postValue(false) // Set loading state to false after data is loaded
             } catch (e: Exception) {
                 newsLoadErrorLD.postValue(true) // Set error state on the main thread
@@ -42,6 +42,7 @@ class NewsViewModel(app: Application) : AndroidViewModel(app), CoroutineScope {
             }
         }
     }
+
 
     fun addNews(list:List<News>){
         launch{

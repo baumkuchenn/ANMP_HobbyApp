@@ -67,4 +67,13 @@
             android:id="@+id/action_newsContentFragment_to_itemHome"
             app:destination="@id/itemHome" />
     </fragment>
+    <fragment
+        android:id="@+id/itemCreate"
+        android:name="com.misoramen.hobbyapp.view.CreateNewsFragment"
+        android:label="fragment_create_news"
+        tools:layout="@layout/fragment_create_news" >
+        <action
+            android:id="@+id/actionHomeFragment"
+            app:destination="@id/itemHome" />
+    </fragment>
 </navigation>

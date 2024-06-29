@@ -5,6 +5,9 @@
 
     <data>
         <variable
+            name="news"
+            type="com.misoramen.hobbyapp.model.NewsWithAuthor" />
+        <variable
             name="content"
             type="com.misoramen.hobbyapp.model.Contents" />
         <variable
@@ -73,7 +76,7 @@
                             android:layout_width="0dp"
                             android:layout_height="100dp"
                             android:scaleType="centerCrop"
-                            android:imageUrl=""
+                            android:imageUrl="@{news.imageUrl}"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
@@ -87,7 +90,7 @@
                             android:layout_marginStart="24dp"
                             android:layout_marginTop="24dp"
                             android:layout_marginEnd="24dp"
-                            android:text="TextView"
+                            android:text="@{news.genre}"
                             android:textStyle="normal|bold"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -100,7 +103,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="24dp"
                             android:layout_marginEnd="24dp"
-                            android:text="TextView"
+                            android:text="@{news.judul}"
                             android:textStyle="normal|bold"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -114,7 +117,7 @@
                             android:layout_marginStart="24dp"
                             android:layout_marginTop="4dp"
                             android:layout_marginEnd="24dp"
-                            android:text="TextView"
+                            android:text="@{news.author}"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/txtJudulContent" />

@@ -13,15 +13,3 @@ import com.misoramen.hobbyapp.model.HobbyDao
 interface ButtonClickListener{
     fun onButtonClick(v:View)
 }
-
-interface RadioClickListener{
-    fun onRadioClick(v: View)
-}
-
-interface DateClickListener{
-    fun onDateClick(v:View)
-}
-
-interface TimeClickListener{
-    fun onTimeClick(v:View)
-}
