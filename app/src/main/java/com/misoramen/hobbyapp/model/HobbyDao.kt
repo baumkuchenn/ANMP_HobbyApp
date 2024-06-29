@@ -1,10 +1,12 @@
 package com.misoramen.hobbyapp.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.lang.invoke.TypeDescriptor
 
 @Dao
 interface HobbyDao {
@@ -31,6 +33,11 @@ interface HobbyDao {
 
     @Query("SELECT * FROM Contents WHERE news_id = :idNews LIMIT :index, 1")
     fun selectNewsContent(idNews:Int, index:Int): List<Contents>
+
+    //@Query("INSERT INTO news (judul, description, image_url, created_At, user_Id, genre_Id) VALUES (:judul, :description, :imageUrl, :createdAt, :userId, :genreId)")
+    //fun insertNews(judul:String, description:String, imageUrl:String, createdAt:String, userId:Int, genreId: Int): List<News>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertNews(vararg news: News)
 
     @Delete
     fun deleteNews(news:News)

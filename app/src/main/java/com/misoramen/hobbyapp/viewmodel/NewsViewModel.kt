@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.misoramen.hobbyapp.model.HobbyDatabase
 import com.misoramen.hobbyapp.model.News
 import com.misoramen.hobbyapp.model.NewsWithAuthor
 import com.misoramen.hobbyapp.util.buildDb
@@ -42,7 +43,16 @@ class NewsViewModel(app: Application) : AndroidViewModel(app), CoroutineScope {
         }
     }
 
-    fun getCertainNews(idNews: Int) {
+    fun addNews(list:List<News>){
+        launch{
+            val db = HobbyDatabase.buildDatabase(
+                getApplication()
+            )
+            db.hobbyDao().insertNews(*list.toTypedArray())
+        }
+    }
+
+    fun getCertainNews(idNews: Int){
         newsLoadErrorLD.value = false
         loadingLD.value = true // Set loading state to true
 
