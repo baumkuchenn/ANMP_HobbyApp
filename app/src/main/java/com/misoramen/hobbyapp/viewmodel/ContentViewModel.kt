@@ -21,7 +21,7 @@ import org.json.JSONObject
 import kotlin.coroutines.CoroutineContext
 
 class ContentViewModel(app: Application): AndroidViewModel(app), CoroutineScope {
-    val contentLD = MutableLiveData<List<Contents>>()
+    val contentLD = MutableLiveData<ArrayList<Contents>>()
     val countLD = MutableLiveData<String>()
     val contentLoadErrorLD = MutableLiveData<Boolean>()
     val loadingLD = MutableLiveData<Boolean>()
@@ -33,7 +33,8 @@ class ContentViewModel(app: Application): AndroidViewModel(app), CoroutineScope 
 
         launch {
             val db = buildDb(getApplication())
-            contentLD.postValue(db.hobbyDao().selectNewsContent(idNews, index))
+            val result = db.hobbyDao().selectNewsContent(idNews, index)
+            contentLD.postValue(result as ArrayList<Contents>)
             countLD.postValue(db.hobbyDao().selectPageContent(idNews))
         }
     }

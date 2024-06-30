@@ -15,7 +15,7 @@ import com.misoramen.hobbyapp.viewmodel.NewsViewModel
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 import com.squareup.picasso.Picasso
 
-class NewsContentFragment : Fragment() {
+class NewsContentFragment : Fragment(), NextPageClick, PrevPageClick {
     private lateinit var binding: FragmentNewsContentBinding
     private lateinit var contentVM: ContentViewModel
     private lateinit var newsVM: NewsViewModel
@@ -33,7 +33,7 @@ class NewsContentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
+        val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews
         newsVM = ViewModelProvider(this).get(NewsViewModel::class.java)
         contentVM = ViewModelProvider(this).get(ContentViewModel::class.java)
 
@@ -42,51 +42,20 @@ class NewsContentFragment : Fragment() {
 
         observeViewModel()
 
-        binding.btnNextContent.setOnClickListener {
-            if (currentContentIndex < contentVM.countLD.value!!.toInt() - 1) {
-                currentContentIndex++
-                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
-                val index = currentContentIndex.toString().toInt()
-                contentVM.loadContent(idNews, index)
-                contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
-                    binding.txtIsiContent.setText(content[0].isi)
-                    contentVM.countLD.observe(viewLifecycleOwner) { count ->
-                        binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
-                    }
-                })
-            }
-        }
-
-        binding.btnPrevContent.setOnClickListener {
-            if (currentContentIndex > 0) {
-                currentContentIndex--
-                val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews.toString().toInt()
-                val index = currentContentIndex.toString().toInt()
-                contentVM.loadContent(idNews, index)
-                contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
-                    binding.txtIsiContent.setText(content[0].isi)
-                    contentVM.countLD.observe(viewLifecycleOwner) { count ->
-                        binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
-                    }
-                })
-            }
-        }
+        binding.nextListener = this
+        binding.prevListener = this
     }
 
     fun observeViewModel() {
         newsVM.newsLD.observe(viewLifecycleOwner, Observer { news ->
-            val picasso = Picasso.Builder(context)
-            picasso.listener { picasso, uri, exception ->
-                exception.printStackTrace() }
-            picasso.build().load(news[0].imageUrl).into(binding.imgPhotoContent)
-            binding.txtGenreContent.setText(news[0].genre)
-            binding.txtJudulContent.setText(news[0].judul)
-            binding.txtAuthorContent.setText("@" + news[0].author)
+            Log.d("content", news[0].toString())
+            binding.news = news[0]
         })
         contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
-            binding.txtIsiContent.setText(content[0].isi)
+            Log.d("content", content[0].toString())
+            binding.content = content[0]
             contentVM.countLD.observe(viewLifecycleOwner) { count ->
-                binding.txtPageContent.text = "${currentContentIndex + 1} of $count"
+                binding.page = "${currentContentIndex + 1} of $count"
             }
         })
         contentVM.contentLoadErrorLD.observe(viewLifecycleOwner, Observer {
@@ -105,6 +74,36 @@ class NewsContentFragment : Fragment() {
                 binding.progressLoadContent.visibility = View.GONE
             }
         })
+    }
+
+    override fun onNextPageClick(v: View) {
+        if (currentContentIndex < contentVM.countLD.value!!.toInt() - 1) {
+            currentContentIndex++
+            val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews
+            val index = currentContentIndex.toString().toInt()
+            contentVM.loadContent(idNews, index)
+            contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
+                binding.content = content[0]
+                contentVM.countLD.observe(viewLifecycleOwner) { count ->
+                    binding.page = "${currentContentIndex + 1} of $count"
+                }
+            })
+        }
+    }
+
+    override fun onPrevPageClick(v: View) {
+        if (currentContentIndex > 0) {
+            currentContentIndex--
+            val idNews = NewsContentFragmentArgs.fromBundle(requireArguments()).idNews
+            val index = currentContentIndex.toString().toInt()
+            contentVM.loadContent(idNews, index)
+            contentVM.contentLD.observe(viewLifecycleOwner, Observer{content ->
+                binding.content = content[0]
+                contentVM.countLD.observe(viewLifecycleOwner) { count ->
+                    binding.page = "${currentContentIndex + 1} of $count"
+                }
+            })
+        }
     }
 
 }

@@ -12,9 +12,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.misoramen.hobbyapp.R
 import com.misoramen.hobbyapp.databinding.FragmentProfileBinding
+import com.misoramen.hobbyapp.model.User
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 
-class ProfileFragment : Fragment() {
+class ProfileFragment : Fragment(), NavLoginClick, UpdateProfileClick {
     private lateinit var binding: FragmentProfileBinding
     private lateinit var viewModel: UserViewModel
 
@@ -35,47 +36,20 @@ class ProfileFragment : Fragment() {
 
         observeViewModel()
 
+        binding.updateListener = this
+        binding.logOutListener = this
+
         binding.refreshLayoutProfile.setOnRefreshListener {
             binding.txtErrorProfile.visibility = View.GONE
             binding.progressLoadProfile.visibility = View.VISIBLE
             viewModel.getAccount(id)
             binding.refreshLayoutProfile.isRefreshing = false
         }
-
-        binding.btnChangeProfile.setOnClickListener {
-            val firstName = binding.txtFirstNameProfile.text.toString()
-            val lastName = binding.txtLastNameProfile.text.toString()
-            val newPass = binding.txtPasswordProfile.text.toString()
-            val newConfirmPass = binding.txtConfirmPassProfile.text.toString()
-
-            if (newPass.isNotEmpty() && newPass == newConfirmPass){
-                viewModel.updateProfile(id, firstName, lastName, newPass)
-                viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
-                    if (viewModel.resultLD.value == "success"){
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    }
-                })
-            }
-            else{
-                Toast.makeText(context, "Password is empty or not same", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        binding.btnSignOutProfile.setOnClickListener {
-            val action = ProfileFragmentDirections.actionItemProfileToLoginFragment()
-            Navigation.findNavController(it).navigate(action)
-        }
     }
 
     fun observeViewModel() {
         viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
-            if (user != null){
-                binding.txtFirstNameProfile.setText(user.firstName)
-                binding.txtLastNameProfile.setText(user.lastName)
-            }
+            binding.user = user
         })
         viewModel.userLoadErrorLD.observe(viewLifecycleOwner, Observer {
             if(it == true) {
@@ -93,5 +67,30 @@ class ProfileFragment : Fragment() {
                 binding.progressLoadProfile.visibility = View.GONE
             }
         })
+    }
+
+    override fun onNavLoginClick(v: View) {
+        val action = ProfileFragmentDirections.actionItemProfileToLoginFragment()
+        Navigation.findNavController(v).navigate(action)
+    }
+
+    override fun onUpdateProfileClick(v: View, obj: User) {
+        if (binding.newPass!!.isNotEmpty() && binding.newPass == binding.newConfirmPass){
+            val id = viewModel.loadUserId()
+            obj.password = binding.newPass!!
+            obj.id = id!!.toInt()
+            viewModel.updateProfile(obj)
+            viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
+                if (viewModel.resultLD.value == "success"){
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+        else{
+            Toast.makeText(context, "Password is empty or not same", Toast.LENGTH_SHORT).show()
+        }
     }
 }

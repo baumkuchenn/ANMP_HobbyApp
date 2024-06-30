@@ -11,9 +11,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.misoramen.hobbyapp.databinding.FragmentLoginBinding
+import com.misoramen.hobbyapp.model.User
 import com.misoramen.hobbyapp.viewmodel.UserViewModel
 
-class LoginFragment : Fragment() {
+class LoginFragment : Fragment(), LoginUserClick, NavRegisterClick {
     private lateinit var viewModel: UserViewModel
     private lateinit var binding: FragmentLoginBinding
 
@@ -27,27 +28,29 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.btnCreateLogin.setOnClickListener {
-            val action = LoginFragmentDirections.actionRegisterFragment()
-            Navigation.findNavController(it).navigate(action)
-        }
-        binding.btnSignInLogin.setOnClickListener{
-            //Tambah Autentifikasi pakai Gson ke database
-            var username = binding.txtUsernameLogin.text.toString()
-            var password = binding.txtPasswordLogin.text.toString()
 
-            viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-            viewModel.login(username, password)
-            viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
-                if (user != null){
-                    viewModel.saveUserId(user.id.toString())
-                    val action = LoginFragmentDirections.actionHomeFragment()
-                    Navigation.findNavController(it).navigate(action)
-                }
-                else{
-                    Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
+        binding.user = User("","","","","","")
+        binding.loginListener = this
+        binding.navRegisListener = this
+    }
+
+    override fun onLoginUserClick(v: View) {
+        viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        viewModel.login(binding.user!!)
+        viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
+            if (user != null){
+                viewModel.saveUserId(user.id.toString())
+                val action = LoginFragmentDirections.actionHomeFragment()
+                Navigation.findNavController(v).navigate(action)
+            }
+            else{
+                Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    override fun onNavRegisterClick(v: View) {
+        val action = LoginFragmentDirections.actionRegisterFragment()
+        Navigation.findNavController(v).navigate(action)
     }
 }
