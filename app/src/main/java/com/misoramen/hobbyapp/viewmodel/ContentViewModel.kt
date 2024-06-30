@@ -34,6 +34,7 @@ class ContentViewModel(app: Application): AndroidViewModel(app), CoroutineScope 
         launch {
             val db = buildDb(getApplication())
             contentLD.postValue(db.hobbyDao().selectNewsContent(idNews, index))
+            countLD.postValue(db.hobbyDao().selectPageContent(idNews))
         }
     }
 

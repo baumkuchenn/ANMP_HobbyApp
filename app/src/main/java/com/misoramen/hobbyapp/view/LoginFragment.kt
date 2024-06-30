@@ -1,6 +1,7 @@
 package com.misoramen.hobbyapp.view
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +40,7 @@ class LoginFragment : Fragment() {
             viewModel.login(username, password)
             viewModel.usersLD.observe(viewLifecycleOwner, Observer { user ->
                 if (user != null){
+                    viewModel.saveUserId(user.id.toString())
                     val action = LoginFragmentDirections.actionHomeFragment()
                     Navigation.findNavController(it).navigate(action)
                 }

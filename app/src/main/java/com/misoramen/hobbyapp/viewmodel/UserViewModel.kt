@@ -34,11 +34,11 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
     val loadingLD = MutableLiveData<Boolean>()
     private var job = Job()
 
-    fun saveUserId(idUser: Int?) {
+    fun saveUserId(idUser: String?) {
         if (idUser != null) {
             val sharedPref = app.getSharedPreferences("com.torimiso.hobbyapp", Context.MODE_PRIVATE)
             val editor = sharedPref.edit()
-            editor.putString("ID", idUser.toString())
+            editor.putString("ID", idUser)
             editor.apply()
         }
     }
@@ -54,16 +54,16 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
 
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().loginUser(username, password)
+            val user = db.hobbyDao().loginUser(username, password)
+            usersLD.postValue(user)
             if (usersLD.value != null){
-                saveUserId(usersLD.value!!.id)
-                loadingLD.value = false
-                resultLD.value = "success"
-                messageLD.value = "Login berhasil"
+                loadingLD.postValue(false)
+                resultLD.postValue("success")
+                messageLD.postValue("Login berhasil")
             } else {
-                loadingLD.value = false
-                resultLD.value = "ERROR"
-                messageLD.value = "Login gagal, username atau password salah"
+                loadingLD.postValue(false)
+                resultLD.postValue("ERROR")
+                messageLD.postValue("Login gagal, username atau password salah")
             }
         }
     }
@@ -72,7 +72,7 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
         loadingLD.value = true
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().getUsername(username)
+            usersLD.postValue(db.hobbyDao().getUsername(username))
             if (usersLD.value == null){
                 val currentInstant = Instant.now()
                 val currentZone = ZoneId.systemDefault()
@@ -81,37 +81,35 @@ class UserViewModel(val app: Application): AndroidViewModel(app), CoroutineScope
 
                 val newUser = User(username, password, email, firstName, lastName, formattedDateTime)
                 db.hobbyDao().registerUser(newUser)
-                loadingLD.value = false
-                resultLD.value = "success"
-                messageLD.value = "Pendaftaran berhasil"
+                loadingLD.postValue(false)
+                resultLD.postValue("success")
+                messageLD.postValue("Pendaftaran berhasil")
             } else {
-                loadingLD.value = false
-                resultLD.value = "ERROR"
-                messageLD.value = "Gagal daftar karena username sudah terpakai"
+                loadingLD.postValue(false)
+                resultLD.postValue("ERROR")
+                messageLD.postValue("Gagal daftar karena username sudah terpakai")
             }
         }
     }
 
-    fun getAccount(){
+    fun getAccount(idUser: String?){
         userLoadErrorLD.value = false
         loadingLD.value = true
 
-        val idUser = loadUserId()
         launch {
             val db = buildDb(getApplication())
-            usersLD.value = db.hobbyDao().getCertainUser(idUser!!)
-            loadingLD.value = false
+            usersLD.postValue(db.hobbyDao().getCertainUser(idUser!!))
+            loadingLD.postValue(false)
         }
     }
 
-    fun updateProfile(firstName: String, lastName: String, password: String){
-        val idUser = loadUserId()
+    fun updateProfile(idUser: String?, firstName: String, lastName: String, password: String){
         launch {
             val db = buildDb(getApplication())
             db.hobbyDao().update(firstName, lastName, password, idUser!!)
-            loadingLD.value = false
-            resultLD.value = "success"
-            messageLD.value = "Profile berhasil diubah"
+            loadingLD.postValue(false)
+            resultLD.postValue("success")
+            messageLD.postValue("Profile berhasil diubah")
         }
     }
 

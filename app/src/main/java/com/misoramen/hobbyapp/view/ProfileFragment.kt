@@ -1,6 +1,7 @@
 package com.misoramen.hobbyapp.view
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -29,14 +30,15 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
-        viewModel.getAccount()
+        val id = viewModel.loadUserId()
+        viewModel.getAccount(id)
 
         observeViewModel()
 
         binding.refreshLayoutProfile.setOnRefreshListener {
             binding.txtErrorProfile.visibility = View.GONE
             binding.progressLoadProfile.visibility = View.VISIBLE
-            viewModel.getAccount()
+            viewModel.getAccount(id)
             binding.refreshLayoutProfile.isRefreshing = false
         }
 
@@ -46,8 +48,8 @@ class ProfileFragment : Fragment() {
             val newPass = binding.txtPasswordProfile.text.toString()
             val newConfirmPass = binding.txtConfirmPassProfile.text.toString()
 
-            if (newPass == newConfirmPass){
-                viewModel.updateProfile(firstName, lastName, newPass)
+            if (newPass.isNotEmpty() && newPass == newConfirmPass){
+                viewModel.updateProfile(id, firstName, lastName, newPass)
                 viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
                     if (viewModel.resultLD.value == "success"){
                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -58,7 +60,7 @@ class ProfileFragment : Fragment() {
                 })
             }
             else{
-                Toast.makeText(context, "Password is not same", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Password is empty or not same", Toast.LENGTH_SHORT).show()
             }
         }
 

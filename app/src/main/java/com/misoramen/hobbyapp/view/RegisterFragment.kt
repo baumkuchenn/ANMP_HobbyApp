@@ -35,7 +35,7 @@ class RegisterFragment : Fragment() {
             var password = binding.txtPasswordRegister.text.toString()
             var confirmPass = binding.txtConfirmPassRegister.text.toString()
 
-            if (password == confirmPass){
+            if (password.isNotEmpty() && password == confirmPass){
                 viewModel = ViewModelProvider(this).get(UserViewModel::class.java)
                 viewModel.createAccount(username, firstName, lastName, email, password)
                 viewModel.messageLD.observe(viewLifecycleOwner, Observer { message ->
@@ -50,7 +50,7 @@ class RegisterFragment : Fragment() {
                 })
             }
             else{
-                Toast.makeText(context, "Password is not same", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Password is empty or not same", Toast.LENGTH_SHORT).show()
             }
         }
         binding.btnSignInRegister.setOnClickListener {
