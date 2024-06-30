@@ -5,7 +5,7 @@ import androidx.databinding.BindingAdapter
 import com.squareup.picasso.Picasso
 
 @BindingAdapter("android:imageUrl")
-fun loadPhotoURL(imageView: ImageView, url:String) {
+fun loadPhotoURL(imageView: ImageView, url:String?) {
     val picasso = Picasso.Builder(imageView.context)
     picasso.listener { picasso, uri, exception ->
         exception.printStackTrace()
