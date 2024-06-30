@@ -66,6 +66,8 @@ data class Contents(
 data class Genre(
     @ColumnInfo(name="nama")
     var nama: String,
+    @ColumnInfo(name="deskripsi")
+    var deskripsi: String,
     @ColumnInfo(name="created_at")
     var createdAt: String,
     @ColumnInfo(name="deleted_at")

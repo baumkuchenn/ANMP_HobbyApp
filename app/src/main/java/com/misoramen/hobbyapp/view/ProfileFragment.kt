@@ -75,7 +75,7 @@ class ProfileFragment : Fragment(), NavLoginClick, UpdateProfileClick {
     }
 
     override fun onUpdateProfileClick(v: View, obj: User) {
-        if (binding.newPass!!.isNotEmpty() && binding.newPass == binding.newConfirmPass){
+        if (binding.newPass?.isNotEmpty() == true && binding.newPass == binding.newConfirmPass){
             val id = viewModel.loadUserId()
             obj.password = binding.newPass!!
             obj.id = id!!.toInt()
