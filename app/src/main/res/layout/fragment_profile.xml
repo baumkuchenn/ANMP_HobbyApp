@@ -26,6 +26,8 @@
         android:layout_height="match_parent"
         tools:context=".view.ProfileFragment">
 
+
+
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/refreshLayoutProfile"
             android:layout_width="match_parent"
@@ -184,11 +186,11 @@
 
                 <Button
                     android:id="@+id/btnSignOutProfile"
-                    android:onClick="@{logOutListener::onNavLoginClick}"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="16dp"
+                    android:onClick="@{logOutListener::onNavLoginClick}"
                     android:text="SIGN OUT"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -196,5 +198,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     </FrameLayout>
 </layout>

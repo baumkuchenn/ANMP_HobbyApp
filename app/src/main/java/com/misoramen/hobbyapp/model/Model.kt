@@ -18,7 +18,9 @@ data class User(
     @ColumnInfo(name="last_name")
     var lastName: String,
     @ColumnInfo(name="created_at")
-    var createdAt: String
+    var createdAt: String,
+    @ColumnInfo(name="deleted_at")
+    var deletedAt: String,
 ){
     @PrimaryKey(autoGenerate = true)
     var id:Int = 0
@@ -34,6 +36,8 @@ data class News(
     var imageUrl: String,
     @ColumnInfo(name="created_at")
     var createdAt: String,
+    @ColumnInfo(name="deleted_at")
+    var deletedAt: String,
     @ColumnInfo(name="user_id")
     var userId: Int,
     @ColumnInfo(name="genre_id")
@@ -49,6 +53,8 @@ data class Contents(
     var isi: String,
     @ColumnInfo(name="created_at")
     var createdAt: String,
+    @ColumnInfo(name="deleted_at")
+    var deletedAt: String,
     @ColumnInfo(name="news_id")
     var newsId: Int
 ){
@@ -62,6 +68,8 @@ data class Genre(
     var nama: String,
     @ColumnInfo(name="created_at")
     var createdAt: String,
+    @ColumnInfo(name="deleted_at")
+    var deletedAt: String,
 ){
     @PrimaryKey(autoGenerate = true)
     var id:Int = 0

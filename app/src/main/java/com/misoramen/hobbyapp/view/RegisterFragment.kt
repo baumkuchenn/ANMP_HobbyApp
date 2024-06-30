@@ -31,7 +31,7 @@ class RegisterFragment : Fragment(), RegisterUserClick, NavLoginClick {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.user = User("", "", "", "", "", "")
+        binding.user = User("", "", "", "", "", "","")
         binding.registerListener = this
         binding.navLoginListener = this
     }
